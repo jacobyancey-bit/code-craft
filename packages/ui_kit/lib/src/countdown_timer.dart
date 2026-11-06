@@ -58,10 +58,10 @@ class _HoldCountdownTimerState extends State<HoldCountdownTimer> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: (isUrgent ? CodeCraftTheme.error : CodeCraftTheme.warning).withOpacity(0.15),
+        color: (isUrgent ? CodeCraftTheme.error : CodeCraftTheme.warning).withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(10),
         border: Border.all(
-          color: (isUrgent ? CodeCraftTheme.error : CodeCraftTheme.warning).withOpacity(0.4),
+          color: (isUrgent ? CodeCraftTheme.error : CodeCraftTheme.warning).withValues(alpha: 0.4),
         ),
       ),
       child: Row(

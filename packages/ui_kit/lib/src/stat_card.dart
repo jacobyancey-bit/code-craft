@@ -72,3 +72,4 @@ class MetricStatCard extends StatelessWidget {
     );
   }
 }
+

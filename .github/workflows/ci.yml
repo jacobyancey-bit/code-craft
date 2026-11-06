@@ -1,0 +1,135 @@
+name: Code_Craft CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  backend-and-database:
+    name: Backend API & Database Tests
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: codecraft_dev
+          POSTGRES_USER: dev_user
+          POSTGRES_PASSWORD: dev_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install Database Dependencies & Run Migrations
+        run: |
+          cd packages/database
+          npm ci
+          npx prisma db push
+          npm run build
+          npx prisma db seed
+        env:
+          DATABASE_URL: postgresql://dev_user:dev_password@localhost:5432/codecraft_dev?schema=public
+
+      - name: Install API Dependencies & Run Tests
+        run: |
+          cd apps/api
+          npm ci
+          npm run build
+          npm test
+        env:
+          DATABASE_URL: postgresql://dev_user:dev_password@localhost:5432/codecraft_dev?schema=public
+          REDIS_URL: redis://localhost:6379
+
+  web-portals:
+    name: Customer & Tech Web Builds
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Build Customer Web Portal
+        run: |
+          cd apps/customer_web
+          npm ci
+          npm run build
+
+      - name: Build Tech Web Portal
+        run: |
+          cd apps/tech_web
+          npm ci
+          npm run build
+
+  flutter-mobile:
+    name: Flutter Mobile & Shared Dart Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.x'
+          channel: 'stable'
+
+      - name: Test packages/models
+        run: |
+          cd packages/models
+          dart pub get
+          dart test
+
+      - name: Test packages/api_client
+        run: |
+          cd packages/api_client
+          dart pub get
+          dart test
+
+      - name: Test packages/ui_kit
+        run: |
+          cd packages/ui_kit
+          flutter pub get
+
+      - name: Test apps/customer_mobile
+        run: |
+          cd apps/customer_mobile
+          flutter pub get
+          flutter test
+
+      - name: Test apps/tech_mobile
+        run: |
+          cd apps/tech_mobile
+          flutter pub get
+          flutter test

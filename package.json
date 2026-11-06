@@ -15,3 +15,4 @@
     "build:all": "npm --prefix packages/database run build && npm --prefix apps/api run build && npm --prefix apps/customer_web run build && npm --prefix apps/tech_web run build"
   }
 }
+

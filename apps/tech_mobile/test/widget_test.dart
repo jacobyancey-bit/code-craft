@@ -28,3 +28,4 @@ void main() {
     expect(find.text('Scanning for incoming jobs...'), findsOneWidget);
   });
 }
+

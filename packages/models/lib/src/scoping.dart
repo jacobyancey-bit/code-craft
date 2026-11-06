@@ -70,3 +70,4 @@ class ScopingEstimate {
   double get minCostDollars => minCostCents / 100.0;
   double get maxCostDollars => maxCostCents / 100.0;
 }
+

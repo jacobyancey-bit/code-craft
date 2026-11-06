@@ -104,3 +104,4 @@ class Project {
     return diff.isNegative ? Duration.zero : diff;
   }
 }
+
