@@ -13,8 +13,11 @@
     "@codecraft/database": "file:../../packages/database",
     "@fastify/cors": "^10.0.2",
     "@prisma/client": "^6.4.1",
+    "bullmq": "^6.7.1",
     "dotenv": "^16.4.7",
     "fastify": "^5.2.1",
+    "ioredis": "^6.0.0",
+    "stripe": "^23.1.0",
     "zod": "^4.6.7"
   },
   "devDependencies": {

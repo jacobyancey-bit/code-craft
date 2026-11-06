@@ -3,12 +3,29 @@ import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import { prisma } from '@codecraft/database';
 import { projectRoutes } from './routes/projects.js';
+import { paymentRoutes, webhookRoutes } from './routes/payments.js';
+import { techRoutes } from './routes/tech.js';
 
 const fastify = Fastify({
   logger: true,
 });
 
 async function bootstrap() {
+  // Capture raw request body buffer for Stripe signature verification
+  fastify.addContentTypeParser(
+    'application/json',
+    { parseAs: 'buffer' },
+    (req, body, done) => {
+      (req as any).rawBody = body;
+      try {
+        const json = JSON.parse(body.toString('utf8'));
+        done(null, json);
+      } catch (err: any) {
+        done(err, undefined);
+      }
+    }
+  );
+
   // Register CORS
   await fastify.register(cors, {
     origin: true,
@@ -35,8 +52,11 @@ async function bootstrap() {
     }
   });
 
-  // Register Project Routes
+  // Register API Routes
   await fastify.register(projectRoutes, { prefix: '/api/projects' });
+  await fastify.register(paymentRoutes, { prefix: '/api/payments' });
+  await fastify.register(webhookRoutes, { prefix: '/api/webhooks' });
+  await fastify.register(techRoutes, { prefix: '/api/tech' });
 
   const PORT = Number(process.env.PORT) || 4000;
   const HOST = process.env.HOST || '0.0.0.0';
