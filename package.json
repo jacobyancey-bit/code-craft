@@ -1,0 +1,17 @@
+{
+  "name": "code-craft-monorepo",
+  "private": true,
+  "workspaces": [
+    "apps/api",
+    "apps/customer_web",
+    "apps/tech_web",
+    "packages/database"
+  ],
+  "scripts": {
+    "dev:api": "npm --prefix apps/api run dev",
+    "dev:customer": "npm --prefix apps/customer_web run dev",
+    "dev:tech": "npm --prefix apps/tech_web run dev",
+    "test:api": "npm --prefix apps/api test",
+    "build:all": "npm --prefix packages/database run build && npm --prefix apps/api run build && npm --prefix apps/customer_web run build && npm --prefix apps/tech_web run build"
+  }
+}
