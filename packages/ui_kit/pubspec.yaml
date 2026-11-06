@@ -1,0 +1,17 @@
+name: codecraft_ui_kit
+description: Reusable Flutter design system and UI components for Code_Craft
+version: 1.0.0
+publish_to: none
+
+environment:
+  sdk: ^3.0.0
+  flutter: ">=3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
