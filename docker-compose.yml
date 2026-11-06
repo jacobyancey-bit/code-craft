@@ -19,5 +19,51 @@ services:
     ports:
       - "6379:6379"
 
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: codecraft_api
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      HOST: 0.0.0.0
+      DATABASE_URL: postgresql://dev_user:dev_password@postgres:5432/codecraft_dev?schema=public
+      REDIS_URL: redis://redis:6379
+    ports:
+      - "4000:4000"
+    depends_on:
+      - postgres
+      - redis
+    profiles:
+      - full-stack
+
+  customer_web:
+    build:
+      context: .
+      dockerfile: apps/customer_web/Dockerfile
+    container_name: codecraft_customer_web
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      - api
+    profiles:
+      - full-stack
+
+  tech_web:
+    build:
+      context: .
+      dockerfile: apps/tech_web/Dockerfile
+    container_name: codecraft_tech_web
+    restart: unless-stopped
+    ports:
+      - "3001:80"
+    depends_on:
+      - api
+    profiles:
+      - full-stack
+
 volumes:
   pgdata:
