@@ -11,7 +11,7 @@ Code_Craft connects customers, field technicians, and operations teams through d
 ```text
 Code_Craft/
 ├── apps/
-│   ├── api/               # Central backend REST & WebSocket API (Node.js / TypeScript)
+│   ├── api/               # Central backend REST & WebSocket API (Fastify / TypeScript)
 │   ├── customer_mobile/   # Customer-facing mobile application (Flutter)
 │   ├── customer_web/      # Customer-facing web portal (React / TypeScript)
 │   ├── tech_mobile/       # Field technician mobile application (Flutter)
@@ -33,13 +33,13 @@ Code_Craft/
 
 - **Mobile:** [Flutter](https://flutter.dev) (iOS & Android) + Dart
 - **Web:** [React](https://react.dev) / TypeScript
-- **Backend:** Node.js / TypeScript + REST & WebSocket APIs
+- **Backend:** Node.js / TypeScript + Fastify + Zod
 - **Database & Cache:** [PostgreSQL 16](https://www.postgresql.org/) managed via [Prisma ORM](https://www.prisma.io/), [Redis 7](https://redis.io/)
 - **Infrastructure:** Docker & Docker Compose
 
 ---
 
-## 🛠️ Getting Started
+## 🛠️ Quick Start Guide
 
 ### Prerequisites
 
@@ -49,14 +49,16 @@ Code_Craft/
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/<your-username>/Code_Craft.git
-cd Code_Craft
+git clone https://github.com/jacobyancey-bit/code-craft.git
+cd code-craft
 ```
 
 ### 2. Configure Environment Variables
-Copy `.env.example` to `.env`:
+Copy `.env.example` to `.env` in the root, database package, and API:
 ```bash
 cp .env.example .env
+cp packages/database/.env.example packages/database/.env
+cp apps/api/.env.example apps/api/.env
 ```
 
 ### 3. Start Local Services
@@ -67,8 +69,32 @@ docker compose up -d
 
 | Service | Container Name | Host Port | Internal Port | Database / Key |
 | :--- | :--- | :--- | :--- | :--- |
-| **PostgreSQL 16** | `codecraft_postgres` | `5433` | `5432` | `codecraft_dev` |
-| **Redis 7** | `codecraft_redis` | `6380` | `6379` | Default DB |
+| **PostgreSQL 16** | `codecraft_postgres` | `5432` | `5432` | `codecraft_dev` |
+| **Redis 7** | `codecraft_redis` | `6379` | `6379` | Default DB |
+
+### 4. Initialize Database Package
+Install dependencies, apply migrations, and build Prisma Client:
+```bash
+cd packages/database
+npm install
+npx prisma migrate dev
+npm run build
+cd ../..
+```
+
+### 5. Start the API Server
+Install dependencies, run the test suite, and launch the dev server:
+```bash
+cd apps/api
+npm install
+npm test
+npm run dev
+```
+
+Visit the health check in your browser or terminal:
+```bash
+curl http://localhost:4000/health
+```
 
 ---
 
@@ -76,7 +102,7 @@ docker compose up -d
 
 | Workspace | Type | Description |
 | :--- | :--- | :--- |
-| `apps/api` | Backend | Core REST & WebSocket services |
+| `apps/api` | Backend | Core REST & WebSocket services with Fastify & Zod |
 | `apps/customer_mobile` | Mobile (Flutter) | Client mobile app for order tracking & requests |
 | `apps/customer_web` | Web (React) | Customer portal for account management and booking |
 | `apps/tech_mobile` | Mobile (Flutter) | Field technician app for job dispatch, routes & checklists |
@@ -91,4 +117,3 @@ docker compose up -d
 ## 📄 License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
-
