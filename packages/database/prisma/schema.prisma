@@ -15,6 +15,8 @@ enum Role {
 
 enum ProjectStatus {
   DRAFT
+  PENDING_DEPOSIT
+  OPEN_FOR_CLAIM
   OPEN
   CLAIMED
   IN_PROGRESS
@@ -24,18 +26,21 @@ enum ProjectStatus {
 }
 
 model User {
-  id              String        @id @default(uuid())
-  email           String        @unique
-  name            String?
-  role            Role          @default(CLIENT)
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
+  id                     String        @id @default(uuid())
+  email                  String        @unique
+  name                   String?
+  role                   Role          @default(CLIENT)
+  activeJobs             Int           @default(0)
+  stripeCustomerId       String?
+  defaultPaymentMethodId String?
+  createdAt              DateTime      @default(now())
+  updatedAt              DateTime      @updatedAt
 
   // Relations
-  techUnlocks     TechUnlock[]
-  clientProjects  Project[]     @relation("ClientProjects")
-  claimedProjects Project[]     @relation("TechProjects")
-  timeLogs        TimeLog[]
+  techUnlocks            TechUnlock[]
+  clientProjects         Project[]     @relation("ClientProjects")
+  claimedProjects        Project[]     @relation("TechProjects")
+  timeLogs               TimeLog[]
 
   @@map("users")
 }
@@ -54,38 +59,46 @@ model TechUnlock {
 }
 
 model Project {
-  id                    String        @id @default(uuid())
-  title                 String
-  description           String?
-  category              String
-  status                ProjectStatus @default(OPEN)
+  id                     String        @id @default(uuid())
+  title                  String
+  description            String?
+  category               String
+  status                 ProjectStatus @default(PENDING_DEPOSIT)
 
   // Rules and configuration snapshot
-  appliedRulesSnapshot  Json
+  appliedRulesSnapshot   Json
 
-  // Hour bounds
-  minHours              Float
-  maxHours              Float
+  // Hour bounds & rates
+  minEstimatedHours      Float
+  maxEstimatedHours      Float
+  hourlyRateCents        Int           @default(8000)
+  hardCapHours           Float
 
   // Funded and consumed hours
-  fundedHours           Float         @default(0)
-  consumedHours         Float         @default(0)
+  fundedHours            Float         @default(0)
+  consumedHours          Float         @default(0)
+
+  // Stripe & Billing info
+  stripeCustomerId       String?
+  defaultPaymentMethodId String?
+  stripePaymentIntentId  String?
 
   // 15-minute claim hold fields
-  claimedById           String?
-  claimedBy             User?         @relation("TechProjects", fields: [claimedById], references: [id])
-  claimHoldStartedAt    DateTime?
-  claimHoldExpiresAt    DateTime?
+  claimedById            String?
+  claimedBy              User?         @relation("TechProjects", fields: [claimedById], references: [id])
+  claimHoldStartedAt     DateTime?
+  claimHoldExpiresAt     DateTime?
+  isClaimConfirmed       Boolean       @default(false)
 
   // Client ownership
-  clientId              String
-  client                User          @relation("ClientProjects", fields: [clientId], references: [id], onDelete: Cascade)
+  clientId               String
+  client                 User          @relation("ClientProjects", fields: [clientId], references: [id], onDelete: Cascade)
 
   // Time logging
-  timeLogs              TimeLog[]
+  timeLogs               TimeLog[]
 
-  createdAt             DateTime      @default(now())
-  updatedAt             DateTime      @updatedAt
+  createdAt              DateTime      @default(now())
+  updatedAt              DateTime      @updatedAt
 
   @@index([clientId])
   @@index([claimedById])
