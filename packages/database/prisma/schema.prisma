@@ -7,3 +7,113 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Role {
+  CLIENT
+  TECH
+  ADMIN
+}
+
+enum ProjectStatus {
+  DRAFT
+  OPEN
+  CLAIMED
+  IN_PROGRESS
+  IN_REVIEW
+  COMPLETED
+  CANCELLED
+}
+
+model User {
+  id              String        @id @default(uuid())
+  email           String        @unique
+  name            String?
+  role            Role          @default(CLIENT)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  // Relations
+  techUnlocks     TechUnlock[]
+  clientProjects  Project[]     @relation("ClientProjects")
+  claimedProjects Project[]     @relation("TechProjects")
+  timeLogs        TimeLog[]
+
+  @@map("users")
+}
+
+model TechUnlock {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skill       String
+  category    String
+  unlockedAt  DateTime @default(now())
+
+  @@unique([userId, skill, category])
+  @@index([userId])
+  @@map("tech_unlocks")
+}
+
+model Project {
+  id                    String        @id @default(uuid())
+  title                 String
+  description           String?
+  category              String
+  status                ProjectStatus @default(OPEN)
+
+  // Rules and configuration snapshot
+  appliedRulesSnapshot  Json
+
+  // Hour bounds
+  minHours              Float
+  maxHours              Float
+
+  // Funded and consumed hours
+  fundedHours           Float         @default(0)
+  consumedHours         Float         @default(0)
+
+  // 15-minute claim hold fields
+  claimedById           String?
+  claimedBy             User?         @relation("TechProjects", fields: [claimedById], references: [id])
+  claimHoldStartedAt    DateTime?
+  claimHoldExpiresAt    DateTime?
+
+  // Client ownership
+  clientId              String
+  client                User          @relation("ClientProjects", fields: [clientId], references: [id], onDelete: Cascade)
+
+  // Time logging
+  timeLogs              TimeLog[]
+
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+
+  @@index([clientId])
+  @@index([claimedById])
+  @@index([status])
+  @@index([category])
+  @@map("projects")
+}
+
+model TimeLog {
+  id                    String    @id @default(uuid())
+  projectId             String
+  project               Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  techId                String
+  tech                  User      @relation(fields: [techId], references: [id], onDelete: Cascade)
+
+  hours                 Float
+  notes                 String?
+  gitCommitHash         String?
+
+  // Auto-approval flags
+  isAutoApproved        Boolean   @default(false)
+  autoApprovalTriggered Boolean   @default(false)
+  autoApprovedAt        DateTime?
+
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([projectId])
+  @@index([techId])
+  @@map("time_logs")
+}
