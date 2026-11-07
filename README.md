@@ -72,28 +72,34 @@ docker compose up -d
 | **PostgreSQL 16** | `codecraft_postgres` | `5432` | `5432` | `codecraft_dev` |
 | **Redis 7** | `codecraft_redis` | `6379` | `6379` | Default DB |
 
-### 4. Initialize Database Package
-Install dependencies, apply migrations, and build Prisma Client:
+### 4. Initialize Database Package & Seed Data
+Install dependencies, apply migrations, build Prisma Client, and seed sample data:
 ```bash
 cd packages/database
 npm install
 npx prisma migrate dev
+npm run db:seed
 npm run build
 cd ../..
 ```
 
-### 5. Start the API Server
-Install dependencies, run the test suite, and launch the dev server:
+### 5. Start the Web & Mobile Apps
 ```bash
-cd apps/api
-npm install
-npm test
-npm run dev
+# Start Customer Web Portal (http://localhost:3000)
+npm run dev:customer
+
+# Start Technician Web Portal (http://localhost:3001)
+npm run dev:tech
+
+# Run Flutter Mobile Apps
+cd apps/customer_mobile && flutter run
+cd apps/tech_mobile && flutter run
 ```
 
-Visit the health check in your browser or terminal:
+### Full-Stack Docker Mode (Optional)
+Run the entire platform (PostgreSQL, Redis, Fastify API, Customer Web, Tech Web) containerized:
 ```bash
-curl http://localhost:4000/health
+docker compose --profile full-stack up --build -d
 ```
 
 ---
