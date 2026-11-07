@@ -1,10 +1,12 @@
 import 'dotenv/config';
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
+import fastifyJwt from '@fastify/jwt';
 import { prisma } from '@codecraft/database';
 import { projectRoutes } from './routes/projects.js';
 import { paymentRoutes, webhookRoutes } from './routes/payments.js';
 import { techRoutes } from './routes/tech.js';
+import { authRoutes } from './routes/auth.js';
 
 const fastify = Fastify({
   logger: true,
@@ -32,6 +34,11 @@ async function bootstrap() {
     credentials: true,
   });
 
+  // Register JWT Authentication
+  await fastify.register(fastifyJwt, {
+    secret: process.env.JWT_SECRET || 'codecraft_super_secret_jwt_key_2026_dev',
+  });
+
   // GET /health route
   fastify.get('/health', async (request, reply) => {
     try {
@@ -53,6 +60,7 @@ async function bootstrap() {
   });
 
   // Register API Routes
+  await fastify.register(authRoutes, { prefix: '/api/auth' });
   await fastify.register(projectRoutes, { prefix: '/api/projects' });
   await fastify.register(paymentRoutes, { prefix: '/api/payments' });
   await fastify.register(webhookRoutes, { prefix: '/api/webhooks' });

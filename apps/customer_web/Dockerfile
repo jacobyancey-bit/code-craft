@@ -11,3 +11,4 @@ FROM nginx:alpine AS runner
 COPY --from=builder /app/apps/customer_web/dist /usr/share/nginx/html
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
+

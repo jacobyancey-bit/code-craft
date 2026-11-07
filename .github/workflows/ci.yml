@@ -133,3 +133,4 @@ jobs:
           cd apps/tech_mobile
           flutter pub get
           flutter test
+

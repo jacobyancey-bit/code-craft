@@ -8,7 +8,7 @@ const TechIdQuerySchema = z.object({
 });
 
 const ClaimJobBodySchema = z.object({
-  techId: z.string().uuid('Valid techId UUID is required'),
+  techId: z.string().uuid('Valid techId UUID is required').optional(),
 });
 
 const ProjectIdParamSchema = z.object({
@@ -16,7 +16,7 @@ const ProjectIdParamSchema = z.object({
 });
 
 const LogTimeBodySchema = z.object({
-  techId: z.string().uuid('Valid techId UUID is required'),
+  techId: z.string().uuid('Valid techId UUID is required').optional(),
   hoursLogged: z
     .number()
     .positive('Hours must be greater than 0')
@@ -118,7 +118,15 @@ export const techRoutes: FastifyPluginAsync = async (fastify) => {
     }
 
     const { projectId } = paramResult.data;
-    const { techId } = bodyResult.data;
+    const userPayload = (request as any).user;
+    const techId = bodyResult.data.techId || userPayload?.id;
+
+    if (!techId) {
+      return reply.status(400).send({
+        error: 'Validation Error',
+        message: 'techId must be provided in request body or via Authorization header',
+      });
+    }
 
     try {
       // Execute within interactive transaction using PostgreSQL row locking (SELECT ... FOR UPDATE)
@@ -238,7 +246,15 @@ export const techRoutes: FastifyPluginAsync = async (fastify) => {
     }
 
     const { projectId } = paramResult.data;
-    const { techId } = bodyResult.data;
+    const userPayload = (request as any).user;
+    const techId = bodyResult.data.techId || userPayload?.id;
+
+    if (!techId) {
+      return reply.status(400).send({
+        error: 'Validation Error',
+        message: 'techId must be provided in request body or via Authorization header',
+      });
+    }
 
     try {
       const confirmedProject = await prisma.$transaction(async (tx) => {
@@ -329,7 +345,17 @@ export const techRoutes: FastifyPluginAsync = async (fastify) => {
     }
 
     const { projectId } = paramResult.data;
-    const { techId, hoursLogged, notes, gitCommitHash } = bodyResult.data;
+    const userPayload = (request as any).user;
+    const techId = bodyResult.data.techId || userPayload?.id;
+
+    if (!techId) {
+      return reply.status(400).send({
+        error: 'Validation Error',
+        message: 'techId must be provided in request body or via Authorization header',
+      });
+    }
+
+    const { hoursLogged, notes, gitCommitHash } = bodyResult.data;
 
     // Optional git commit SHA sanity check (7 to 40 hex characters)
     if (gitCommitHash && !/^[0-9a-fA-F]{7,40}$/.test(gitCommitHash)) {

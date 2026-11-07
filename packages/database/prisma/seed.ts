@@ -12,11 +12,14 @@ async function main() {
   await prisma.user.deleteMany();
 
   // 2. Seed Admin User
+  const defaultPasswordHash = '$2b$10$93Vs/3J5OSxpETKZYcIq2.4HmeziclZU7QvDy/T8n4ScBF.igf/w.'; // password123
+
   const admin = await prisma.user.create({
     data: {
       email: 'admin@codecraft.dev',
       name: 'System Administrator',
       role: 'ADMIN',
+      passwordHash: defaultPasswordHash,
     },
   });
   console.log(`👤 Admin created: ${admin.email}`);
@@ -27,6 +30,7 @@ async function main() {
       email: 'sarah.client@acmecorp.com',
       name: 'Sarah Jenkins (Acme Corp)',
       role: 'CLIENT',
+      passwordHash: defaultPasswordHash,
       stripeCustomerId: 'cus_acme_corp_mock',
       defaultPaymentMethodId: 'pm_card_acme_mock',
     },
@@ -37,6 +41,7 @@ async function main() {
       email: 'david.client@fintech.io',
       name: 'David Zhao (Fintech IO)',
       role: 'CLIENT',
+      passwordHash: defaultPasswordHash,
       stripeCustomerId: 'cus_fintech_mock',
       defaultPaymentMethodId: 'pm_card_fintech_mock',
     },
@@ -49,6 +54,7 @@ async function main() {
       email: 'alex.tech@codecraft.dev',
       name: 'Alex Rivera (Senior Web Specialist)',
       role: 'TECH',
+      passwordHash: defaultPasswordHash,
       activeJobs: 0,
       techUnlocks: {
         create: [
@@ -64,6 +70,7 @@ async function main() {
       email: 'maria.tech@codecraft.dev',
       name: 'Maria Santos (Mobile Specialist)',
       role: 'TECH',
+      passwordHash: defaultPasswordHash,
       activeJobs: 1,
       techUnlocks: {
         create: [
@@ -79,6 +86,7 @@ async function main() {
       email: 'chen.tech@codecraft.dev',
       name: 'Kevin Chen (Integration Specialist)',
       role: 'TECH',
+      passwordHash: defaultPasswordHash,
       activeJobs: 2, // Concurrency cap reached (< 2)
       techUnlocks: {
         create: [
@@ -212,3 +220,4 @@ main()
   .finally(async () => {
     await prisma.$disconnect();
   });
+

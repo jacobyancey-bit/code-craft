@@ -8,10 +8,12 @@ import {
 } from '../services/scopingEngine.js';
 
 export const CreateProjectSchema = z.object({
-  client: z.object({
-    email: z.string().email('Valid client email is required'),
-    name: z.string().optional(),
-  }),
+  client: z
+    .object({
+      email: z.string().email('Valid client email is required'),
+      name: z.string().optional(),
+    })
+    .optional(),
   title: z.string().min(1, 'Project title is required'),
   description: z.string().optional(),
   category: ProjectCategoryEnum,
@@ -55,6 +57,17 @@ export const projectRoutes: FastifyPluginAsync = async (fastify) => {
 
     const { client, title, description, category, hasBrandAssets, hasWrittenContent, hasDomainAndDns, designPreference, hourlyRateCents } = parseResult.data;
 
+    const userPayload = (request as any).user;
+    const clientEmail = (client?.email || userPayload?.email)?.toLowerCase().trim();
+    const clientName = client?.name || userPayload?.name;
+
+    if (!clientEmail) {
+      return reply.status(400).send({
+        error: 'Validation Error',
+        message: 'Client email is required either in request body or via Authorization header',
+      });
+    }
+
     // Run deterministic scoping engine
     const scoping = calculateProjectEstimate({
       category,
@@ -71,13 +84,13 @@ export const projectRoutes: FastifyPluginAsync = async (fastify) => {
     try {
       // Find or create Client User
       const clientUser = await prisma.user.upsert({
-        where: { email: client.email.toLowerCase().trim() },
+        where: { email: clientEmail },
         update: {
-          name: client.name ?? undefined,
+          name: clientName ?? undefined,
         },
         create: {
-          email: client.email.toLowerCase().trim(),
-          name: client.name ?? null,
+          email: clientEmail,
+          name: clientName ?? null,
           role: 'CLIENT',
         },
       });
